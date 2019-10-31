@@ -172,6 +172,10 @@ def train(height=CAPTCHA_HEIGHT, width=CAPTCHA_WIDTH, y_size=len(CAPTCHA_LIST)*C
     saver = tf.train.Saver()
     sess = tf.Session()
     sess.run(tf.global_variables_initializer())     # 初始化
+    # 基于当前已有模型进行二次训练
+    if os.path.exists("model/checkpoint"):
+        model_file = tf.train.latest_checkpoint('model/')
+        saver.restore(sess, model_file)
     step = 0    # 步数
     while 1:
         batch_x, batch_y = get_next_batch(64)
