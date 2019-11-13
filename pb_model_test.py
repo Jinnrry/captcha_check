@@ -22,7 +22,7 @@ def freeze_graph_test(pb_path, image_path):
             sess.run(tf.global_variables_initializer())
 
             # 定义输入的张量名称,对应网络结构的输入张量
-            # input:0作为输入图像,keep_prob:0作为dropout的参数,测试时值为1,is_training:0训练参数
+            # Placeholder:0作为输入图像,Placeholder_2:0作为dropout的参数,测试时值为1
             input_image_tensor = sess.graph.get_tensor_by_name("Placeholder:0")
             input_olaceholder2 = sess.graph.get_tensor_by_name("Placeholder_2:0")
 
