@@ -1,8 +1,12 @@
 # -*- coding:utf-8 -*-
 # description:训练模型
+import os
 
 import tensorflow as tf
 from datetime import datetime
+
+from tensorflow.python.framework import graph_util
+
 from util import get_next_batch
 from captcha_gen import CAPTCHA_HEIGHT, CAPTCHA_WIDTH, CAPTCHA_LEN, CAPTCHA_LIST
 
@@ -104,6 +108,10 @@ def cnn_graph(x, keep_prob, size, captcha_list=CAPTCHA_LIST, captcha_len=CAPTCHA
     w_out = weight_variable([1024, len(captcha_list)*captcha_len])
     b_out = bias_variable([len(captcha_list)*captcha_len])
     y_conv = tf.matmul(h_drop_fc, w_out) + b_out
+
+    # 预测值输出层
+    predict = tf.argmax(tf.reshape(y_conv, [-1, CAPTCHA_LEN, len(CAPTCHA_LIST)]), 2, name="output")
+
     return y_conv
 
 
@@ -191,6 +199,12 @@ def train(height=CAPTCHA_HEIGHT, width=CAPTCHA_WIDTH, y_size=len(CAPTCHA_LIST)*C
                 saver.save(sess, model_path, global_step=step)
                 acc_rate += 0.01
                 if acc_rate > 0.99:     # 准确率达到99%则退出
+
+                    #  训练结束时保存pb模型
+                    constant_graph = graph_util.convert_variables_to_constants(sess, sess.graph_def, ['output'])
+                    with tf.gfile.FastGFile("./model/" + str(step) + 'model.pb', mode='wb') as f:
+                        f.write(constant_graph.SerializeToString())
+
                     break
         step += 1
     sess.close()
